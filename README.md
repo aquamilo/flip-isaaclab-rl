@@ -60,7 +60,7 @@ The command direction and velocity are randomized during training, allowing the 
 ## Technical Stack
 
 - Ubuntu 22.04
-- Conda environment: `l_lab`
+- Conda environment
 - Isaac Sim / Isaac Lab 5.1
 - robot_lab
 - RSL-RL PPO
