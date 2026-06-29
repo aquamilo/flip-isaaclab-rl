@@ -134,22 +134,34 @@ Important engineering steps included:
 
 ## Results
 
-### Training Curve
+### Training Curve: Mean Reward
 
-![Mean Reward](media/screenshots/tensorboard_mean_reward.png)
+The policy successfully learned stable planar locomotion. The mean reward increased during training, indicating improved velocity tracking and survival behavior.
 
-### Training Metrics
+![Mean Reward](media/screenshots/mean_reward.jpg)
 
-![Training Metrics](media/screenshots/training_metrics.png)
+### Velocity Tracking Metrics
+
+The trained policy was evaluated using Go2-style velocity tracking metrics adapted to the Flip robot.
+
+#### Linear Velocity Tracking Error
+
+![Linear Velocity Error](media/screenshots/error_vel_xy.jpg)
+
+#### Yaw Velocity Tracking Error
+
+![Yaw Velocity Error](media/screenshots/error_vel_yaw.jpg)
 
 ### Demo GIF
 
-![Flip Demo](media/gifs/flip_demo.gif)
+The following GIF shows the trained Flip policy running in Isaac Lab.
+
+![Flip Demo](media/gifs/animation.gif)
 
 ### Demo Video
 
 ```text
-media/videos/flip_demo.mp4
+media/videos/demo.mp4
 ```
 
 ## Installation
