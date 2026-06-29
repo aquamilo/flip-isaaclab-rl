@@ -1,6 +1,6 @@
 # Flip Isaac Lab RL
 
-**Author:** Chunmiao Li
+**Author:** Chunmiao Li  
 **Project Type:** Custom quadruped reinforcement learning project  
 **Simulator:** Isaac Sim / Isaac Lab 5.1  
 **RL Framework:** robot_lab + RSL-RL PPO  
