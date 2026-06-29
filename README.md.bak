@@ -1,0 +1,279 @@
+# Flip Isaac Lab RL
+
+**Author:** Chunmiao Li  
+**Project Type:** Custom quadruped reinforcement learning project  
+**Simulator:** Isaac Sim / Isaac Lab 5.1  
+**RL Framework:** robot_lab + RSL-RL PPO  
+
+This repository provides a reproducible reinforcement learning setup for training a **custom Flip quadruped robot** in **Isaac Lab 5.1**.
+
+Unlike common public benchmark robots such as Unitree Go2, ANYmal, or Spot, **Flip is not a standard built-in Isaac Lab robot asset or a widely available commercial benchmark platform**. The robot task integration, Isaac Lab configuration, USD adaptation, reward mapping, training setup, and keyboard-controlled playback script were implemented by the author.
+
+The goal of this project is to demonstrate a full robotics RL pipeline:
+
+```text
+custom robot USD
+→ Isaac Lab articulation integration
+→ manager-based RL task registration
+→ PPO locomotion training
+→ TensorBoard evaluation
+→ trained model playback
+→ keyboard-controlled velocity command
+```
+
+## Project Highlights
+
+- Integrated a custom quadruped robot into Isaac Lab 5.1.
+- Fixed imported USD issues, including floating-base articulation setup.
+- Adapted Go2-style locomotion reward terms to the Flip robot.
+- Trained a PPO policy for randomized planar velocity tracking.
+- Implemented a custom keyboard playback script for manual velocity control.
+- Provided reproducible code, configuration files, training commands, model checkpoint, screenshots, GIFs, and videos.
+
+## Task Description
+
+The policy is trained for randomized planar velocity tracking.
+
+The robot receives target commands:
+
+```text
+lin_vel_x
+lin_vel_y
+ang_vel_z
+```
+
+The command direction and velocity are randomized during training, allowing the robot to move in the 2D plane instead of only walking forward.
+
+## Technical Stack
+
+- Ubuntu 22.04
+- Conda environment: `l_lab`
+- Isaac Sim / Isaac Lab 5.1
+- robot_lab
+- RSL-RL PPO
+- Gymnasium task registration
+- Manager-based RL environment
+- TensorBoard
+
+## Robot and Control
+
+The Flip robot is treated as a floating-base quadruped articulation.
+
+The policy controls 12 actuated leg joints:
+
+```text
+.*_hip_joint
+.*_thigh_joint
+.*_calf_joint
+```
+
+Fixed foot joints and the imported root joint are not used as policy actions.
+
+Important engineering steps included:
+
+- removing or deactivating the imported fixed `root_joint`
+- applying `ArticulationRootAPI` to the robot root
+- enabling contact sensors
+- repairing foot collision support
+- mapping body names to Flip-specific links:
+  - `base_link`
+  - `.*_foot_link`
+  - `.*_hip_link`
+  - `.*_thigh_link`
+  - `.*_calf_link`
+
+## Repository Structure
+
+```text
+.
+├── assets/
+│   └── flip/
+│       └── flip_floating_articulation.usd
+├── isaaclab_task/
+│   └── flip/
+│       ├── __init__.py
+│       ├── flip_env_cfg.py
+│       ├── flip_robot_cfg.py
+│       └── agents/
+│           ├── __init__.py
+│           └── rsl_rl_ppo_cfg.py
+├── scripts/
+│   ├── install_flip_task.sh
+│   ├── play_flip_keyboard.py
+│   ├── make_flip_floating_v3.py
+│   └── patch_flip_foot_collision.py
+├── commands/
+│   ├── install.md
+│   ├── train.md
+│   ├── play.md
+│   ├── keyboard_control.md
+│   └── tensorboard.md
+├── docs/
+│   └── technical_stack.md
+├── models/
+│   └── flip_latest.pt
+├── media/
+│   ├── screenshots/
+│   ├── gifs/
+│   └── videos/
+└── README.md
+```
+
+## Results
+
+### Training Curve
+
+![Mean Reward](media/screenshots/tensorboard_mean_reward.png)
+
+### Training Metrics
+
+![Training Metrics](media/screenshots/training_metrics.png)
+
+### Demo GIF
+
+![Flip Demo](media/gifs/flip_demo.gif)
+
+### Demo Video
+
+```text
+media/videos/flip_demo.mp4
+```
+
+## Installation
+
+See:
+
+```text
+commands/install.md
+```
+
+Basic installation command:
+
+```bash
+bash scripts/install_flip_task.sh /home/robot/l_lab/IsaacLab
+```
+
+After installation, verify task registration:
+
+```bash
+cd /home/robot/l_lab/IsaacLab
+
+./isaaclab.sh -p - <<'PY'
+from isaacsim import SimulationApp
+simulation_app = SimulationApp({"headless": True})
+
+import gymnasium as gym
+import isaaclab_tasks
+
+print("Registered Flip tasks:")
+for name in gym.registry.keys():
+    if "Flip" in name:
+        print(name)
+
+simulation_app.close()
+PY
+```
+
+Expected output:
+
+```text
+Isaac-Velocity-Flat-Flip-v0
+```
+
+## Training
+
+See:
+
+```text
+commands/train.md
+```
+
+Example command:
+
+```bash
+cd /home/robot/l_lab/IsaacLab
+
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
+  --task Isaac-Velocity-Flat-Flip-v0 \
+  --num_envs 4096 \
+  --headless \
+  --max_iterations 8000
+```
+
+## Playback
+
+See:
+
+```text
+commands/play.md
+```
+
+Example command:
+
+```bash
+cd /home/robot/l_lab/IsaacLab
+
+CKPT=$(find logs/rsl_rl/flip_flat_go2_metrics -type f \( -name "model_*.pt" -o -name "*.pt" \) | sort -V | tail -n 1)
+
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/play.py \
+  --task Isaac-Velocity-Flat-Flip-v0 \
+  --checkpoint "$CKPT" \
+  --num_envs 16
+```
+
+## Keyboard Control
+
+See:
+
+```text
+commands/keyboard_control.md
+```
+
+A custom keyboard playback script is included:
+
+```text
+scripts/play_flip_keyboard.py
+```
+
+It overrides the robot's `base_velocity` command during playback, allowing manual planar velocity control.
+
+## TensorBoard
+
+See:
+
+```text
+commands/tensorboard.md
+```
+
+Example command:
+
+```bash
+cd /home/robot/l_lab/IsaacLab
+
+tensorboard \
+  --logdir logs/rsl_rl/flip_flat_go2_metrics \
+  --port 6006 \
+  --bind_all
+```
+
+## Model
+
+The trained model checkpoint is stored in:
+
+```text
+models/flip_latest.pt
+```
+
+## Notes
+
+This repository is intended as a reproducible robotics RL project overlay, not a full Isaac Lab distribution.
+
+Users should install Isaac Lab and robot_lab separately, then copy the Flip task configuration from this repository into their local Isaac Lab task directory using:
+
+```bash
+bash scripts/install_flip_task.sh /path/to/IsaacLab
+```
+
+## Author Statement
+
+This project was developed by **Chunmiao Li** as an independent robotics reinforcement learning engineering project. It demonstrates the ability to integrate a non-standard robot asset into Isaac Lab, repair simulation and articulation issues, design a locomotion training configuration, train a PPO policy, evaluate training behavior, and build an interactive keyboard-controlled playback workflow.

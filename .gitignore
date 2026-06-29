@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+*.log
+logs/
+events.out.tfevents.*
+
+# Cache
+.cache/
+.vscode/
+.idea/
+
+# Training tools
+wandb/
+runs/
+
+# Temporary files
+*.tmp
+.DS_Store
