@@ -154,8 +154,6 @@ The trained policy was evaluated using Go2-style velocity tracking metrics adapt
 
 ### Demo GIF
 
-The following GIF shows the trained Flip policy running in Isaac Lab.
-
 ![Flip Demo](media/gifs/animation.gif)
 
 ### Demo Video
